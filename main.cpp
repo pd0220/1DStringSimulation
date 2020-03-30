@@ -8,10 +8,6 @@
 #include <vector>
 // Eigen library for matrices
 #include <Eigen/Dense>
-// GL headers for animation
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
 
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -106,13 +102,13 @@ auto Step = [](Eigen::MatrixXd &mat, int tIndex) {
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 // main function
-// argv[1] --> animation 
-int main(int argc, char **argv)
+int main(int, char **)
 {
-    if(StepperConst >= 1)
+    // check for stability
+    if (StepperConst >= 1)
     {
         std::cout << "WARNING\nStability issues may occur." << std::endl;
-    } 
+    }
 
     // matrix for y(x, t) values
     Eigen::MatrixXd matSolution(numOfTimeSteps, numOfSpaceSteps);
@@ -133,7 +129,7 @@ int main(int argc, char **argv)
     }
 
     std::ofstream data;
-    data.open("test.txt");
+    data.open("data.txt");
     for (int tIndex{0}; tIndex < numOfTimeSteps; tIndex++)
     {
         for (int xIndex{0}; xIndex < numOfSpaceSteps; xIndex++)
