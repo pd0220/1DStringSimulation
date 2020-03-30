@@ -8,18 +8,22 @@
 #include <vector>
 // Eigen library for matrices
 #include <Eigen/Dense>
+// GL headers for animation
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
 
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 // number of time (s) and space (cm) points on the lattice
-const int numOfTimeSteps = 1000;
+const int numOfTimeSteps = 300;
 const int numOfSpaceSteps = 20;
 // speed of wave [sqrt(tension / linear density)] (cm / s)
 const double cWave = 10.;
 // starting and ending (x = L) points in space (cm)
-const double xStart = 0., xStop = 1000.;
+const double xStart = 0., xStop = 100.;
 // starting and ending points in time (s)
-const double tStart = 0., tStop = 100.;
+const double tStart = 0., tStop = 50.;
 // step size for time (s) and space (cm)
 const double deltaT = (tStop - tStart) / numOfTimeSteps;
 const double deltaX = (xStop - xStart) / numOfSpaceSteps;
@@ -27,7 +31,7 @@ const double deltaX = (xStop - xStart) / numOfSpaceSteps;
 const double StepperConst = cWave * cWave * deltaT * deltaT / deltaX / deltaX;
 // initial conditions --> x0 and y0 (cm)
 const double X0 = 50.;
-const double Y0 = 5.;
+const double Y0 = 3.;
 
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -102,9 +106,13 @@ auto Step = [](Eigen::MatrixXd &mat, int tIndex) {
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 // main function
-int main(int, char **)
+// argv[1] --> animation 
+int main(int argc, char **argv)
 {
-    std::cout << StepperConst << std::endl;
+    if(StepperConst >= 1)
+    {
+        std::cout << "WARNING\nStability issues may occur." << std::endl;
+    } 
 
     // matrix for y(x, t) values
     Eigen::MatrixXd matSolution(numOfTimeSteps, numOfSpaceSteps);
