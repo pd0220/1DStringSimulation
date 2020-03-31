@@ -119,8 +119,6 @@ int main(int, char **)
     // taking the first step seperately --> estimating y(x, t - dt) from initial condition: dy(x, t = 0) / dt = f(x)
     FirstStep(matSolution);
 
-    //std::cout << matSolution << std::endl;
-
     // taking timesteps (rest of the simulation)
     for (int tIndex{1}; tIndex < numOfTimeSteps - 1; tIndex++)
     {
@@ -129,6 +127,17 @@ int main(int, char **)
     }
 
     std::ofstream data;
+    data.open("animationData.txt");
+    for (int tIndex{0}; tIndex < numOfTimeSteps; tIndex++)
+    {
+        for (int xIndex{0}; xIndex < numOfSpaceSteps; xIndex++)
+        {
+            data << matSolution(tIndex, xIndex) << " ";
+        }
+        data << "\n";
+    }
+    data.close();
+    
     data.open("data.txt");
     for (int tIndex{0}; tIndex < numOfTimeSteps; tIndex++)
     {
@@ -137,7 +146,6 @@ int main(int, char **)
             data << tIndex * deltaT << " " << xIndex * deltaX << " " << matSolution(tIndex, xIndex) << "\n";
         }
     }
-    data.close();
 
-    return 0;
+    data.close();
 }
