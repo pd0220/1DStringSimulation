@@ -137,7 +137,7 @@ int main(int, char **)
         data << "\n";
     }
     data.close();
-    
+
     data.open("data.txt");
     for (int tIndex{0}; tIndex < numOfTimeSteps; tIndex++)
     {
@@ -146,6 +146,5 @@ int main(int, char **)
             data << tIndex * deltaT << " " << xIndex * deltaX << " " << matSolution(tIndex, xIndex) << "\n";
         }
     }
-
     data.close();
 }
