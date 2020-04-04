@@ -15,25 +15,104 @@
 const int numOfTimeSteps = 100000;
 const int numOfSpaceSteps = 49;
 // speed of wave [sqrt(tension / linear density)]
-const double cWave = 3.;
+const double cWave = 10.;
 // starting and ending (x = L) points in space
 const double xStart = 0., xStop = 1.;
 // starting and ending points in time
-const double tStart = 0., tStop = 5.;
+const double tStart = 0., tStop = 100.;
 // step size for time and space
 const double deltaT = (tStop - tStart) / numOfTimeSteps;
 const double deltaX = (xStop - xStart) / numOfSpaceSteps;
 // characteristic constant for stepping
 const double StepperConst = cWave * cWave * deltaT * deltaT / deltaX / deltaX;
 // initial conditions --> x0 and y0
-const double X0 = 150.;
+const double X0 = xStop / 2;
 const double Y0 = 0.01;
 // file name
-std::string fileName = "data.txt";
+std::string fileName = "data_mixed_mindkettő.txt";
 
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-// setting initial values (lambda)
+// setting initial values for linearity testing
+// left, right or both
+auto SetInitialValueLinear = [&](Eigen::MatrixXd &mat, std::string detSwitch) {
+    // check matrix dimensions
+    if (mat.rows() != numOfTimeSteps || mat.cols() != numOfSpaceSteps)
+    {
+        std::cout << "ERROR\nGiven matrix dimensions are not appropriate." << std::endl;
+        std::exit(-1);
+    }
+
+    // left
+    if (detSwitch == "left")
+    {
+        double inRatio = Y0 / xStop * 3;
+        for (int xIndex{1}; xIndex < numOfSpaceSteps - 1; xIndex++)
+        {
+            double x = xIndex * deltaX;
+            if (x <= (double)xStop / 3)
+            {
+                mat(0, xIndex) = inRatio * x;
+            }
+            else
+            {
+                mat(0, xIndex) = -inRatio * (x - xStop + deltaX) / 2;
+            }
+        }
+    }
+    // right
+    else if (detSwitch == "right")
+    {
+        double inRatio = Y0 / xStop * 3 / 2;
+        for (int xIndex{1}; xIndex < numOfSpaceSteps - 1; xIndex++)
+        {
+            double x = xIndex * deltaX;
+            if (x <= (double)2 / 3 * xStop)
+            {
+                mat(0, xIndex) = -inRatio * x;
+            }
+            else
+            {
+                mat(0, xIndex) = inRatio * (x - xStop + deltaX) * 2;
+            }
+        }
+    }
+
+    // both
+    if (detSwitch == "both")
+    {
+        double inRatio = Y0 / xStop * 3 / 2;
+        // second mode
+        for (int xIndex{1}; xIndex < numOfSpaceSteps - 1; xIndex++)
+        {
+            double x = xIndex * deltaX;
+            if (x <= (double)xStop / 3)
+            {
+                mat(0, xIndex) = inRatio * x;
+            }
+            else if (x > (double)xStop / 3 && x <= (double)xStop * 2 / 3)
+            {
+                mat(0, xIndex) = -inRatio * (x - (xStop - deltaX) / 2) * 2;
+            }
+            else
+            {
+                mat(0, xIndex) = inRatio * (x - xStop + deltaX);
+            }
+        }
+    }
+
+    // y(x = 0, t) = y(x = L, t) = 0
+    for (int tIndex{0}; tIndex < numOfTimeSteps; tIndex++)
+    {
+        mat(tIndex, 0) = 0.;
+        mat(tIndex, numOfSpaceSteps - 1) = 0.;
+    }
+};
+
+// -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// setting initial values (lambda) --> strumming
+// X0 must be L / mode
 auto SetInitialValueStrum = [&](Eigen::MatrixXd &mat, int mode) {
     // check matrix dimensions
     if (mat.rows() != numOfTimeSteps || mat.cols() != numOfSpaceSteps)
@@ -204,7 +283,9 @@ int main(int, char **)
     Eigen::MatrixXd matSolution(numOfTimeSteps, numOfSpaceSteps);
 
     // setting initial values for y(x = 0, t) = y(x = L, t) = 0 and y(x, t = 0) --> normal modes
-    SetInitialValue(matSolution, 1);
+    //SetInitialValue(matSolution, 1);
+    //SetInitialValueStrum(matSolution, 1);
+    SetInitialValueLinear(matSolution, "both");
 
     // taking the first step seperately --> estimating y(x, t - dt) from initial condition: dy(x, t = 0) / dt = f(x)
     FirstStep(matSolution);
@@ -238,4 +319,6 @@ int main(int, char **)
         }
     }
     data.close();
+
+    std::cout << deltaX / deltaT << std::endl;
 }
