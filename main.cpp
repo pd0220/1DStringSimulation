@@ -12,14 +12,14 @@
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 // number of time and space points on the lattice
-const int numOfTimeSteps = 100000;
-const int numOfSpaceSteps = 49;
+const int numOfTimeSteps = 10000;
+const int numOfSpaceSteps = 200;
 // speed of wave [sqrt(tension / linear density)]
 const double cWave = 10.;
 // starting and ending (x = L) points in space
 const double xStart = 0., xStop = 1.;
 // starting and ending points in time
-const double tStart = 0., tStop = 100.;
+const double tStart = 0., tStop = 2.;
 // step size for time and space
 const double deltaT = (tStop - tStart) / numOfTimeSteps;
 const double deltaX = (xStop - xStart) / numOfSpaceSteps;
@@ -29,7 +29,36 @@ const double StepperConst = cWave * cWave * deltaT * deltaT / deltaX / deltaX;
 const double X0 = xStop / 2;
 const double Y0 = 0.01;
 // file name
-std::string fileName = "data_mixed_mindkettő.txt";
+std::string fileName = "data_mixed_beat.txt";
+
+// -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// setting initial value for beat pattern interference
+// hard coded: sum of two normal modes
+auto SetInitialValueBeat = [&](Eigen::MatrixXd &mat, int mode1, int mode2)
+{
+    // check matrix dimensions
+    if (mat.rows() != numOfTimeSteps || mat.cols() != numOfSpaceSteps)
+    {
+        std::cout << "ERROR\nGiven matrix dimensions are not appropriate." << std::endl;
+        std::exit(-1);
+    }
+
+    // set initial value
+    for (int xIndex{1}; xIndex < numOfSpaceSteps - 1; xIndex++)
+    {
+        double x = xIndex * deltaX;
+        mat(0, xIndex) = Y0 * (std::sin(mode1 * M_PI / (xStop - deltaX) * x) + std::sin(mode2 * M_PI / (xStop - deltaX) * x));
+    }
+
+
+    // y(x = 0, t) = y(x = L, t) = 0
+    for (int tIndex{0}; tIndex < numOfTimeSteps; tIndex++)
+    {
+        mat(tIndex, 0) = 0.;
+        mat(tIndex, numOfSpaceSteps - 1) = 0.;
+    }
+};
 
 // -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -285,7 +314,8 @@ int main(int, char **)
     // setting initial values for y(x = 0, t) = y(x = L, t) = 0 and y(x, t = 0) --> normal modes
     //SetInitialValue(matSolution, 1);
     //SetInitialValueStrum(matSolution, 1);
-    SetInitialValueLinear(matSolution, "both");
+    //SetInitialValueLinear(matSolution, "both");
+    SetInitialValueBeat(matSolution, 20, 21);
 
     // taking the first step seperately --> estimating y(x, t - dt) from initial condition: dy(x, t = 0) / dt = f(x)
     FirstStep(matSolution);
