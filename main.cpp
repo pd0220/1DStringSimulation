@@ -311,7 +311,7 @@ int main(int, char **)
     // matrix for y(x, t) values
     Eigen::MatrixXd matSolution(numOfTimeSteps, numOfSpaceSteps);
 
-    // setting initial values for y(x = 0, t) = y(x = L, t) = 0 and y(x, t = 0) --> normal modes
+    // setting initial values for y(x = 0, t) = y(x = L, t) = 0 and y(x, t = 0)
     //SetInitialValue(matSolution, 1);
     //SetInitialValueStrum(matSolution, 1);
     //SetInitialValueLinear(matSolution, "both");
